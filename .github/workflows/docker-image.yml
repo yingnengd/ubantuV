@@ -22,4 +22,4 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: syw00034/appum-x86
+          tags: syw00038/appum-x86
