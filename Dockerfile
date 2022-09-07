@@ -89,8 +89,11 @@ RUN  wget -nv -O noVNC.zip "https://github.com/kanaka/noVNC/archive/${NOVNC_SHA}
 #======================
 # Install SDK packages
 #======================
-ARG ANDROID_VERSION=11.0
-ARG API_LEVEL=30
+# ARG ANDROID_VERSION=11.0
+# ARG API_LEVEL=30
+
+ARG ANDROID_VERSION=R
+ARG API_LEVEL=R
 ARG PROCESSOR=x86_64
 ARG SYS_IMG=x86_64
 ARG IMG_TYPE=google_apis
