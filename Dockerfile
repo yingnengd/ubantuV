@@ -210,349 +210,54 @@
 
 
 
-# FROM appium/appium:v1.22.3-p1
+FROM openjdk:8
 
-# LABEL maintainer "Budi Utomo <budtmo.os@gmail.com>"
+MAINTAINER javavirys@gmail.com
+USER root
 
-# #=============
-# # Set WORKDIR
-# #=============
-# WORKDIR /root
-
-# #==================
-# # General Packages
-# #------------------
-# # xterm
-# #   Terminal emulator
-# # supervisor
-# #   Process manager
-# # socat
-# #   Port forwarder
-# #------------------
-# #  NoVNC Packages
-# #------------------
-# # x11vnc
-# #   VNC server for X display
-# #       We use package from ubuntu 18.10 to fix crashing issue
-# # openbox
-# #   Windows manager
-# # feh
-# #   ScreenBackground
-# # python-xdg
-# #   Required by openbox autostart function
-# # menu
-# #   Debian menu
-# # python-numpy
-# #   Numpy, For faster performance: https://github.com/novnc/websockify/issues/77
-# # net-tools
-# #   Netstat
-# #------------------
-# #  Video Recording
-# #------------------
-# # ffmpeg
-# #   Video recorder
-# # jq
-# #   Sed for JSON data
-# #==================
-# ADD docker/configs/x11vnc.pref /etc/apt/preferences.d/
-# RUN apt-get -qqy update && apt-get -qqy install --no-install-recommends \
-#     xterm \ 
-#     supervisor \
-#     socat \
-#     x11vnc \
-#     openbox \
-#     feh \
-#     python-xdg \
-#     menu \
-#     python-numpy \
-#     net-tools \
-#     ffmpeg \
-#     jq \
-#     curl \
-#     libavcodec-dev \
-#     libavformat-dev \
-#     libavutil-dev \
-#     gcc \
-#     git \
-#     make \
-#     meson \
-#     musl-dev \
-#     pkgconf \
-#     libsdl2-dev \
-#  && apt clean all \
-#  && rm -rf /var/lib/apt/lists/*
+ARG android_compile_sdk
+ARG android_build_tools
+ARG android_sdk_tools
 
 
-# #===========
-# # scrcpy - screen copy
-# # https://github.com/Genymobile/scrcpy
-# #===========
-# ARG SCRCPY_VER=1.10
-# ARG SERVER_HASH="cbeb1a4e046f1392c1dc73c3ccffd7f86dec4636b505556ea20929687a119390"
+ENV SDK_URL="https://dl.google.com/android/repository/sdk-tools-linux-$android_sdk_tools.zip" \
+    ANDROID_HOME="/usr/local/android-sdk" \
+    ANDROID_VERSION=$android_compile_sdk \
+    PROJECT_NAME=$project_name \
+    ANDROID_BUILD_TOOLS_VERSION=$android_build_tools
 
-# RUN mkdir /root/scrcpy
-# RUN curl -L -o /root/scrcpy/scrcpy-code.zip https://github.com/Genymobile/scrcpy/archive/v${SCRCPY_VER}.zip
-# RUN curl -L -o /root/scrcpy/scrcpy-server.jar https://github.com/Genymobile/scrcpy/releases/download/v${SCRCPY_VER}/scrcpy-server-v${SCRCPY_VER}.jar
-# RUN echo "$SERVER_HASH scrcpy/scrcpy-server.jar" | sha256sum -c -
-# RUN cd scrcpy && unzip -x scrcpy-code.zip
-# RUN cd scrcpy/scrcpy-${SCRCPY_VER} && meson x --buildtype release --strip -Db_lto=true -Dprebuilt_server=/root/scrcpy/scrcpy-server.jar
-# RUN cd scrcpy/scrcpy-${SCRCPY_VER}/x && ninja && ninja install
-# RUN rm -rf scrcpy/
+ENV ANDROID_SDK=$ANDROID_HOME
 
-# #=======
-# # noVNC
-# # Use same commit id that docker-selenium uses
-# # https://github.com/elgalu/docker-selenium/blob/236b861177bd2917d864e52291114b1f5e4540d7/Dockerfile#L412-L413
-# #=======
-# ENV NOVNC_SHA="b403cb92fb8de82d04f305b4f14fa978003890d7" \
-#     WEBSOCKIFY_SHA="558a6439f14b0d85a31145541745e25c255d576b"
-# RUN  wget -nv -O noVNC.zip "https://github.com/kanaka/noVNC/archive/${NOVNC_SHA}.zip" \
-#  && unzip -x noVNC.zip \
-#  && rm noVNC.zip  \
-#  && mv noVNC-${NOVNC_SHA} noVNC \
-#  && wget -nv -O websockify.zip "https://github.com/kanaka/websockify/archive/${WEBSOCKIFY_SHA}.zip" \
-#  && unzip -x websockify.zip \
-#  && mv websockify-${WEBSOCKIFY_SHA} ./noVNC/utils/websockify \
-#  && rm websockify.zip \
-#  && ln noVNC/vnc_auto.html noVNC/index.html
+RUN export PATH=$ANDROID_SDK/emulator:$ANDROID_SDK/tools:$ANDROID_SDK/tools/bin:$PATH
 
-# #================================================ 
-# # noVNC Default Configurations
-# # These Configurations can be changed through -e
-# #================================================
-# ARG APP_RELEASE_VERSION=1.5-p0
-# ENV DISPLAY=:0 \
-#     SCREEN=0 \
-#     SCREEN_WIDTH=1600 \
-#     SCREEN_HEIGHT=900 \
-#     SCREEN_DEPTH=16 \
-#     LOCAL_PORT=5900 \
-#     TARGET_PORT=6080 \
-#     TIMEOUT=1 \
-#     VIDEO_PATH=/tmp/video \
-#     LOG_PATH=/var/log/supervisor \
-#     GA=true \
-#     GA_ENDPOINT=https://www.google-analytics.com/collect \
-#     GA_TRACKING_ID=UA-133466903-1 \
-#     GA_API_VERSION="1" \
-#     APP_RELEASE_VERSION=$APP_RELEASE_VERSION \
-#     APP_TYPE=Device
+RUN apt-get update 
 
-# #================================================
-# # openbox configuration
-# # Update the openbox configuration files to:
-# #   + Use a single virtual desktop to prevent accidentally switching 
-# #   + Add background
-# #================================================
-# ADD images/logo_dockerandroid.png /root/logo.png
-# ADD src/.fehbg /root/.fehbg
-# ADD src/rc.xml /etc/xdg/openbox/rc.xml
-# RUN echo /root/.fehbg >> /etc/xdg/openbox/autostart
+RUN apt-get -y install unzip
+RUN apt-get -y install curl wget
+RUN apt-get -y install software-properties-common
+RUN apt-get -y install libgl1-mesa-glx
 
-# #=========================
-# # Set default variables
-# #=========================
-# ENV APPIUM_LOG=$LOG_PATH/appium.log
-# ENV REAL_DEVICE=true
-# ENV BROWSER=android
+# Download Android SDK
+RUN mkdir "$ANDROID_HOME" .android \
+    && cd "$ANDROID_HOME" \
+    && curl -o sdk.zip $SDK_URL \
+    && unzip sdk.zip \
+    && rm sdk.zip \
+    && yes | $ANDROID_HOME/tools/bin/sdkmanager --licenses
 
-# #===============
-# # Expose Ports
-# #---------------
-# # 4723
-# #   Appium port
-# # 6080
-# #   noVNC port
-# # 5555
-# #   ADB connection port
-# #===============
-# EXPOSE 4723 6080 5555
+# Install Android Build Tool and Libraries
+RUN $ANDROID_HOME/tools/bin/sdkmanager --update | grep -v = || true
+RUN $ANDROID_HOME/tools/bin/sdkmanager "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" \
+    "platforms;android-${ANDROID_VERSION}" \
+    "platform-tools" | grep -v = || true
 
-# #===================
-# # Run docker-appium
-# #===================
-# COPY src /root/src
-# COPY supervisord.conf /root/
-# RUN chmod -R +x /root/src && chmod +x /root/supervisord.conf
+RUN $ANDROID_HOME/tools/bin/sdkmanager emulator | grep -v = || true
+RUN $ANDROID_HOME/tools/bin/sdkmanager "system-images;android-29;google_apis;x86" | grep -v = || true
+RUN $ANDROID_HOME/tools/bin/sdkmanager "system-images;android-25;google_apis;armeabi-v7a" | grep -v = || true
 
-# CMD /usr/bin/supervisord --configuration supervisord.conf
+RUN yes | $ANDROID_HOME/tools/bin/sdkmanager --licenses
 
+RUN $ANDROID_HOME/tools/bin/avdmanager create avd -n mynexus -k "system-images;android-29;google_apis;x86" --tag "google_apis" --device "Nexus 5"
+RUN $ANDROID_HOME/tools/bin/avdmanager create avd -n mynexus -k "system-images;android-25;google_apis;armeabi-v7a" --tag "google_apis" --device "Nexus 5 armeabi"
 
-
-
-
-
-
-
-FROM appium/appium:v1.22.3-p1
-
-LABEL maintainer "Budi Utomo <budtmo.os@gmail.com>"
-
-#=============
-# Set WORKDIR
-#=============
-WORKDIR /root
-
-#==================
-# General Packages
-#------------------
-# xterm
-#   Terminal emulator
-# supervisor
-#   Process manager
-# socat
-#   Port forwarder
-# keychain
-#   ssh-key creator
-#------------------
-# Genymotion spec
-#------------------
-# python3-setuptools
-#   PPython packaging facilitator
-# python3-wheel
-#   Python distribution
-# python3-pip
-#   Python package installer
-#------------------
-#  NoVNC Packages
-#------------------
-# x11vnc
-#   VNC server for X display
-#       We use package from ubuntu 18.10 to fix crashing issue
-# openbox
-#   Windows manager
-# feh
-#   ScreenBackground
-# python-xdg
-#   Required by openbox autostart function
-# menu
-#   Debian menu
-# python-numpy
-#   Numpy, For faster performance: https://github.com/novnc/websockify/issues/77
-# net-tools
-#   Netstat
-#------------------
-#  Video Recording
-#------------------
-# ffmpeg
-#   Video recorder
-# jq
-#   Sed for JSON data
-#==================
-ADD docker/configs/x11vnc.pref /etc/apt/preferences.d/
-RUN apt-get -qqy update && apt-get -qqy install --no-install-recommends \
-    xterm \ 
-    supervisor \
-    socat \
-    keychain \
-    python3-setuptools \
-    python3-wheel \
-    python3-pip \
-    x11vnc \
-    openbox \
-    feh \
-    python-xdg \
-    menu \
-    python-numpy \
-    net-tools \
-    ffmpeg \
-    jq \
- && apt clean all \
- && rm -rf /var/lib/apt/lists/*
-
-#=======
-# noVNC
-# Use same commit id that docker-selenium uses
-# https://github.com/elgalu/docker-selenium/blob/236b861177bd2917d864e52291114b1f5e4540d7/Dockerfile#L412-L413
-#=======
-ENV NOVNC_SHA="b403cb92fb8de82d04f305b4f14fa978003890d7" \
-    WEBSOCKIFY_SHA="558a6439f14b0d85a31145541745e25c255d576b"
-RUN  wget -nv -O noVNC.zip "https://github.com/kanaka/noVNC/archive/${NOVNC_SHA}.zip" \
- && unzip -x noVNC.zip \
- && rm noVNC.zip  \
- && mv noVNC-${NOVNC_SHA} noVNC \
- && wget -nv -O websockify.zip "https://github.com/kanaka/websockify/archive/${WEBSOCKIFY_SHA}.zip" \
- && unzip -x websockify.zip \
- && mv websockify-${WEBSOCKIFY_SHA} ./noVNC/utils/websockify \
- && rm websockify.zip \
- && ln noVNC/vnc_auto.html noVNC/index.html
-
-#================================================ 
-# noVNC Default Configurations
-# These Configurations can be changed through -e
-#================================================
-ARG APP_RELEASE_VERSION=1.5-p0
-ENV DISPLAY=:0 \
-    SCREEN=0 \
-    SCREEN_WIDTH=1600 \
-    SCREEN_HEIGHT=900 \
-    SCREEN_DEPTH=16 \
-    LOCAL_PORT=5900 \
-    TARGET_PORT=6080 \
-    TIMEOUT=1 \
-    VIDEO_PATH=/tmp/video \
-    LOG_PATH=/var/log/supervisor \
-    GA=true \
-    GA_ENDPOINT=https://www.google-analytics.com/collect \
-    GA_TRACKING_ID=UA-133466903-1 \
-    GA_API_VERSION="1" \
-    APP_RELEASE_VERSION=$APP_RELEASE_VERSION \
-    APP_TYPE=Genymotion
-
-#================================================
-# openbox configuration
-# Update the openbox configuration files to:
-#   + Use a single virtual desktop to prevent accidentally switching 
-#   + Add background
-#================================================
-ADD images/logo_dockerandroid.png /root/logo.png
-ADD src/.fehbg /root/.fehbg
-ADD src/rc.xml /etc/xdg/openbox/rc.xml
-RUN echo /root/.fehbg >> /etc/xdg/openbox/autostart
-
-#============
-# Set Locale
-#============
-ENV LC_ALL=C.UTF-8
-ENV LANG=C.UTF-8
-
-#====================
-# Install genymotion
-#====================
-RUN echo | ssh-keygen -q
-ENV GENYMOTION=true \
-    INSTANCES_PATH=/root/tmp/instances.txt \
-    APPIUM_LOG=$LOG_PATH/appium.log
-RUN pip3 install gmsaas
-COPY genymotion/generate_config.sh genymotion/geny_start.sh genymotion/enable_adb.sh /root/
-
-#===================
-# Install Terraform
-#===================
-ARG TERRAFORM_VERSION=0.11.7
-
-ENV TERRAFORM_VERSION=$TERRAFORM_VERSION
-RUN wget -nv -O terraform.zip "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip" \
- && unzip -x terraform.zip \
- && rm terraform.zip
-
-#===============
-# Expose Ports
-#---------------
-# 4723
-#   Appium port
-# 6080
-#   noVNC port
-# 5555
-#   ADB connection port
-#===============
-EXPOSE 4723 6080 5555
-
-#=======================
-# Run docker-genymotion
-#=======================
-COPY src /root/src
-COPY supervisord.conf /root/
-RUN chmod -R +x /root/src && chmod +x /root/supervisord.conf /root/geny_start.sh
-RUN gmsaas config set android-sdk-path ${ANDROID_HOME}
-CMD ["./geny_start.sh"]
+RUN apt-get update && apt-get -y install android-tools-adb android-tools-fastboot
