@@ -215,8 +215,8 @@ FROM openjdk:8
 MAINTAINER javavirys@gmail.com
 USER root
 
-ARG android_compile_sdk
-ARG android_build_tools
+ARG android_compile_sdk=25
+ARG android_build_tools=29.0.3
 ARG android_sdk_tools=4333796
 
 
