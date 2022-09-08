@@ -257,7 +257,7 @@ RUN $ANDROID_HOME/tools/bin/sdkmanager "system-images;android-25;google_apis;arm
 
 RUN yes | $ANDROID_HOME/tools/bin/sdkmanager --licenses
 
-RUN $ANDROID_HOME/tools/bin/avdmanager create avd -n mynexus -k "system-images;android-29;google_apis;x86" --tag "google_apis" --device "Nexus 5"
+# RUN $ANDROID_HOME/tools/bin/avdmanager create avd -n mynexus-x86 -k "system-images;android-29;google_apis;x86" --tag "google_apis" --device "Nexus 5"
 RUN $ANDROID_HOME/tools/bin/avdmanager create avd -n mynexus -k "system-images;android-25;google_apis;armeabi-v7a" --tag "google_apis" --device "Nexus 5 armeabi"
 
 RUN apt-get update && apt-get -y install android-tools-adb android-tools-fastboot
