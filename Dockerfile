@@ -299,7 +299,8 @@ RUN  wget -nv -O noVNC.zip "https://github.com/kanaka/noVNC/archive/${NOVNC_SHA}
 #======================
 # Install SDK packages
 #======================
-ARG ANDROID_VERSION=5.0.1
+# ARG ANDROID_VERSION=5.0.1
+ARG ANDROID_VERSION=8.1
 ARG API_LEVEL=21
 ARG PROCESSOR=x86
 ARG SYS_IMG=x86
