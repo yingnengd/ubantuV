@@ -217,7 +217,7 @@ USER root
 
 ARG android_compile_sdk
 ARG android_build_tools
-ARG android_sdk_tools
+ARG android_sdk_tools=4333796
 
 
 ENV SDK_URL="https://dl.google.com/android/repository/sdk-tools-linux-$android_sdk_tools.zip" \
