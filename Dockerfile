@@ -300,5 +300,4 @@ COPY startup.sh /startup.sh
 RUN chmod 744 /startup.sh
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]
 # CMD ["/startup.sh"]
-Footer
 
