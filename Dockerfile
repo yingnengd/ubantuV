@@ -230,9 +230,8 @@ RUN mkdir -p $HOME/.android \
 RUN echo "no" | $ANDROID_SDK/tools/bin/avdmanager create avd -n aName -k  "$ANDROID_ARM" -c 300M
 
 EXPOSE 5554
-
 CMD ($ANDROID_SDK/tools/emulator @aName -no-skin -no-audio -no-window)
-Footer
+
 
 FROM bu
 ENV DEBIAN_FRONTEND=noninteractive
